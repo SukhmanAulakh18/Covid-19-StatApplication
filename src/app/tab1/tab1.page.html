@@ -1,17 +1,101 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title>Canada COVID-19 Data</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
+      <ion-title size="large">Canada COVID-19 Data</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Loading data...</p>
+  </div>
+
+  <div *ngIf="error" class="ion-text-center ion-padding">
+    <ion-text color="danger">
+      <p>{{ error }}</p>
+    </ion-text>
+  </div>
+
+  <div *ngIf="!loading && !error && canadaData">
+    <!-- Date Selector -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Select Date</ion-card-title>
+        <ion-item>
+          <ion-label>Select Date</ion-label>
+          <ion-select [(ngModel)]="selectedDate" (ionChange)="onDateChange($event)" interface="action-sheet">
+            <ion-select-option *ngFor="let record of detailedData" [value]="record.date">
+              {{ record.date | date:'mediumDate' }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- National Summary -->
+    <ion-card *ngIf="canadaData">
+      <ion-card-header>
+        <ion-card-title>National Summary</ion-card-title>
+        <ion-card-subtitle>As of {{ canadaData.date | date:'mediumDate' }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-label>
+              <h2>Total Cases</h2>
+              <p>{{ canadaData.totalCases | number }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h2>New Cases (Last 7 Days)</h2>
+              <p>{{ canadaData.newCases | number }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h2>Total Deaths</h2>
+              <p>{{ canadaData.totalDeaths | number }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h2>New Deaths (Last 7 Days)</h2>
+              <p>{{ canadaData.newDeaths | number }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Provincial Statistics -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Provincial Statistics</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let province of canadaData?.provinces">
+            <ion-label>
+              <h2>{{ province.name }}</h2>
+              <p>Total Cases: {{ province.totalCases | number }}</p>
+              <p>New Cases (7 Days): {{ province.newCases | number }}</p>
+              <p>Total Deaths: {{ province.deaths | number }}</p>
+              <p>New Deaths (7 Days): {{ province.newDeaths | number }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
